@@ -196,7 +196,7 @@ export default {
               NT$: {{ Math.floor(Number(item.price) * item.discount) }}
             </div>
             <a-rate allow-half disabled :value="4" />
-            <quantity></quantity>
+            <quantity :title="item.title" :price="item.price"></quantity>
           </div>
         </div>
       </div>

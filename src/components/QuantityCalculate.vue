@@ -1,8 +1,14 @@
 <script lang="ts">
-import { PlusCircleFilled, MinusCircleFilled } from '@ant-design/icons-vue'
+import { PlusCircleFilled, MinusCircleFilled, ShoppingCartOutlined } from '@ant-design/icons-vue'
 import { ref } from 'vue'
+import { store, MutationsType } from '@/stores/store'
 export default {
-  components: { APlus: PlusCircleFilled, AMinus: MinusCircleFilled },
+  props: ['title', 'price'],
+  components: {
+    APlus: PlusCircleFilled,
+    AMinus: MinusCircleFilled,
+    AShopping: ShoppingCartOutlined
+  },
   setup() {
     const quantity = ref(0)
     return { quantity }
@@ -11,6 +17,11 @@ export default {
     calQuantity(index: number) {
       this.quantity += index
       if (this.quantity < 0) this.quantity = 0
+    },
+    addItem() {
+      const item = { title: this.title, price: this.price, quantity: this.quantity }
+      store.commit(MutationsType.ADD_ITEM, item)
+      this.quantity = 0
     }
   }
 }
@@ -20,6 +31,7 @@ export default {
     <a-minus @click="calQuantity(-1)"></a-minus>
     <input type="text" disabled style="border: none" :value="quantity" />
     <a-plus @click="calQuantity(1)"></a-plus>
+    <a-shopping class="shopping-item" @click="addItem"></a-shopping>
   </div>
 </template>
 <style scoped lang="scss">
@@ -34,4 +46,10 @@ export default {
     font-weight: bold;
   }
 }
+.shopping-item {
+  padding-left: 10px;
+  font-size: 20px;
+  cursor: pointer;
+}
 </style>
+@/stores/store
