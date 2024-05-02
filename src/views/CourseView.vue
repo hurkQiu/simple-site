@@ -1,4 +1,7 @@
 <script lang="ts">
+import { key } from '@/stores'
+import { useStore } from 'vuex'
+
 export default {
   data() {
     return {
@@ -15,6 +18,13 @@ export default {
         }
       ]
     }
+  },
+  setup() {
+    const store = useStore(key)
+    return { store }
+  },
+  mounted() {
+    this.store.state.routeModule.isUnMounted = false
   }
 }
 </script>

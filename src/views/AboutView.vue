@@ -1,3 +1,17 @@
+<script lang="ts">
+import { key } from '@/stores'
+import { useStore } from 'vuex'
+
+export default {
+  setup() {
+    const store = useStore(key)
+    return { store }
+  },
+  mounted() {
+    this.store.state.routeModule.isUnMounted = false
+  }
+}
+</script>
 <template>
   <div class="about">
     <img src="https://www.voguehk.com/media/2021/08/Screenshot-2021-12-15-at-5.13.45-PM.png" />

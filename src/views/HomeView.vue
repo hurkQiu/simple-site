@@ -1,6 +1,9 @@
 <script lang="ts">
 import { ref } from 'vue'
 import { EnvironmentFilled, PhoneFilled } from '@ant-design/icons-vue'
+import { useStore } from 'vuex'
+import { key } from '@/stores'
+
 export default {
   data() {
     return {
@@ -72,7 +75,8 @@ export default {
   setup() {
     const carouselIndex = ref(0)
     const timer = ref(0)
-    return { carouselIndex, timer }
+    const store = useStore(key)
+    return { carouselIndex, timer, store }
   },
   methods: {
     setCarouselIndex(index: number) {
@@ -84,6 +88,7 @@ export default {
       this.carouselIndex += 1
       if (this.carouselIndex >= this.carouselItems.length) this.carouselIndex = 0
     }, 5000)
+    this.store.state.routeModule.isUnMounted = false
   },
   beforeUnmount() {
     clearInterval(this.timer)
@@ -316,9 +321,10 @@ export default {
     background: #ffa500;
   }
   img {
-    max-height: 200px;
+    max-height: 100%;
     justify-self: center;
     border-radius: 50px;
+    max-width: 100%;
   }
   li {
     justify-self: left;

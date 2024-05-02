@@ -3,139 +3,34 @@ import { ref } from 'vue'
 import { Rate } from 'ant-design-vue'
 import QuantityCalculate from '@/components/QuantityCalculate.vue'
 import { Pagination } from 'ant-design-vue'
+import { API } from '@/axios/api'
+import type { Product } from '@/axios/Model/CommonModel'
+import { useStore } from 'vuex'
+import { key } from '@/stores'
 export default {
-  data() {
-    return {
-      products: [
-        {
-          category: 'Coffee Beans',
-          items: [
-            {
-              title: 'EL TRIUNFO / COLOMBIA',
-              price: '360',
-              discount: 0.94,
-              imgSrc: 'https://fuglencoffee.jp/cdn/shop/files/ElTriunfo-01_800x.png?v=1710319192'
-            },
-            {
-              title: 'LOS CEDROS / HONDURAS',
-              price: '320',
-              discount: 0.95,
-              imgSrc: 'https://fuglencoffee.jp/cdn/shop/files/LosCedros2_800x.png?v=1710288537'
-            },
-            {
-              title: 'EL PEDREGAL ESPRESSO / EL SALVADOR',
-              price: '520',
-              discount: 0.94,
-              imgSrc:
-                'https://fuglencoffee.jp/cdn/shop/files/ElPedregalesp-01_800x.png?v=1710288194'
-            },
-            {
-              title: 'CABALLERO / HONDURAS',
-              price: '260',
-              discount: 0.91,
-              imgSrc:
-                'https://fuglencoffee.jp/cdn/shop/files/ECCaballeroFilter_800x.png?v=1708401517'
-            },
-            {
-              title: 'BULAMBULI / UGANDA',
-              price: '270',
-              discount: 0.93,
-              imgSrc: 'https://fuglencoffee.jp/cdn/shop/files/ECBulambuli_800x.png?v=1708407271'
-            },
-            {
-              title: 'CABALLERO ESPRESSO / HONDURAS',
-              price: '520',
-              discount: 0.9,
-              imgSrc: 'https://fuglencoffee.jp/cdn/shop/files/ECCaballeroEsp_800x.png?v=1708407389'
-            }
-          ]
-        },
-        {
-          category: 'Coffee utensils',
-          items: [
-            {
-              title: '4 PCS 6.7 Inches Coffee Spoons',
-              price: '270',
-              discount: 0.75,
-              imgSrc:
-                'https://images-na.ssl-images-amazon.com/images/I/51Ev1-Oe6cS._AC_UL232_SR232,232_.jpg'
-            },
-            {
-              title: 'WDT Tool Espresso',
-              price: '750',
-              discount: 1,
-              imgSrc:
-                'https://images-na.ssl-images-amazon.com/images/I/81AWvs+HtcL._AC_UL232_SR232,232_.jpg'
-            },
-            {
-              title: 'Bean Envy Handheld Milk Frother for Coffee - Electric Hand Blender',
-              price: '390',
-              discount: 0.77,
-              imgSrc:
-                'https://images-na.ssl-images-amazon.com/images/I/71awEli5TGL._AC_UL232_SR232,232_.jpg'
-            },
-            {
-              title: '1 Pack Double Spouts Measuring',
-              price: '300',
-              discount: 0.9,
-              imgSrc:
-                'https://images-na.ssl-images-amazon.com/images/I/51lKtE2rU-L._AC_UL232_SR232,232_.jpg'
-            },
-            {
-              title: 'Wooden Tablespoon Scoop',
-              price: '180',
-              discount: 1,
-              imgSrc:
-                'https://images-na.ssl-images-amazon.com/images/I/51xUW+gV31L._AC_UL232_SR232,232_.jpg'
-            }
-          ]
-        },
-        {
-          category: 'Drip Bag Coffee',
-          items: [
-            {
-              title: '100Pcs Portable Coffee Filter Paper Bag',
-              price: '390',
-              discount: 1,
-              imgSrc:
-                'https://images-na.ssl-images-amazon.com/images/I/61zWM0k-JlL._AC_UL232_SR232,232_.jpg'
-            },
-            {
-              title: '50Pcs Single Serve Disposable Drip Coffee',
-              price: '180',
-              discount: 1,
-              imgSrc:
-                'https://images-na.ssl-images-amazon.com/images/I/61hEMkx1N8L._AC_UL232_SR232,232_.jpg'
-            },
-            {
-              title: 'Coffee Filter Paper Bag 100 pieces',
-              price: '450',
-              discount: 1,
-              imgSrc:
-                'https://images-na.ssl-images-amazon.com/images/I/51U0KsrvDEL._AC_UL232_SR232,232_.jpg'
-            },
-            {
-              title: '3 Coracoes Portinari Drip Coffee',
-              price: '510',
-              discount: 1,
-              imgSrc:
-                'https://m.media-amazon.com/images/S/aplus-media-library-service-media/5b20c9c5-2950-4112-8122-abd815cbeb16.__CR0,0,970,600_PT0_SX970_V1___.png'
-            }
-          ]
-        }
-      ]
-    }
-  },
   setup() {
     const tag = ref(0)
     const currentPage = ref(1)
     const pageSizeArray = ref([1, 3, 5, 10])
     const currentPageSize = ref(10)
-    return { tag, currentPage, pageSize: pageSizeArray, currentPageSize }
+    const products = ref<Product[]>([])
+    const productTypes = ref<string[]>([])
+    const productList = ref<{ type: string; items: Product[] }[]>([])
+    const store = useStore(key)
+    return {
+      tag,
+      currentPage,
+      pageSize: pageSizeArray,
+      currentPageSize,
+      productList,
+      products,
+      productTypes,
+      store
+    }
   },
   components: {
     ARate: Rate,
-    Quantity: QuantityCalculate,
+    QuantityCalculate,
     APagination: Pagination
   },
   methods: {
@@ -149,7 +44,32 @@ export default {
       this.tag = index
       this.currentPage = 1
       this.currentPageSize = 10
+    },
+    setProductsData() {
+      this.productTypes.forEach((typeData: any) => {
+        this.productList.push({ type: typeData.type, items: [] })
+      })
+      for (let index = 0; index < this.products.length; index++) {
+        const flag = this.productList.findIndex(
+          (product) => product.type === this.products[index].type
+        )
+        if (flag >= 0) this.productList[flag].items.push(this.products[index])
+      }
+    },
+    async getProductType() {
+      const types = await API.getInstance().getProductType()
+      this.productTypes = types
+    },
+    async getProducts() {
+      const products = await API.getInstance().getProducts()
+      this.products = products
     }
+  },
+  async mounted() {
+    await this.getProductType()
+    await this.getProducts()
+    this.setProductsData()
+    this.store.state.routeModule.isUnMounted = false
   }
 }
 </script>
@@ -158,27 +78,27 @@ export default {
     <div class="side-bar">
       <li
         :class="['side-item', { active: tag === index }]"
-        v-for="(item, index) in products"
+        v-for="(item, index) in productList"
         :key="index"
         @click="changeTag(index)"
       >
-        {{ item.category }}
+        {{ item.type }}
       </li>
     </div>
     <div class="content">
-      <a-pagination
+      <APagination
         v-model:current="currentPage"
         v-model:pageSize="currentPageSize"
         :pageSizeOptions="['1', '3', '5', '10']"
         show-size-changer
-        :total="products[tag].items.length"
+        :total="productList[tag] ? productList[tag].items.length : 0"
         show-less-items
         responsive
         class="pagination"
       />
       <div
         class="item-group"
-        v-for="(product, index) in products"
+        v-for="(product, index) in productList"
         :key="index"
         v-show="tag === index"
       >
@@ -188,15 +108,22 @@ export default {
           :key="index2"
           v-show="isShowItem(index2)"
         >
-          <img :src="item.imgSrc" />
+          <img :src="item.img_Src" />
           <div class="item-description">
-            <div class="item-title">{{ item.title }}</div>
-            <div :class="{ discounted: item.discount < 1 }">NT${{ item.price }}</div>
+            <div class="item-title">{{ item.name }}</div>
+            <!-- <div :class="{ discounted: item.discount < 1 }">NT${{ item.price }}</div>
             <div v-show="item.discount < 1">
               NT$: {{ Math.floor(Number(item.price) * item.discount) }}
-            </div>
-            <a-rate allow-half disabled :value="4" />
-            <quantity :title="item.title" :price="item.price"></quantity>
+            </div> -->
+            <ARate allow-half disabled :value="4" />
+            <div>NT$:{{ item.price }}</div>
+            <QuantityCalculate
+              :name="item.name"
+              :price="item.price"
+              :id="item.id"
+              :img-src="item.img_Src"
+              style="margin: auto"
+            ></QuantityCalculate>
           </div>
         </div>
       </div>

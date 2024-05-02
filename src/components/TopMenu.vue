@@ -1,30 +1,90 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import { Dropdown, Menu, Button, Badge } from 'ant-design-vue'
 import { ShoppingCartOutlined, UserOutlined, HomeOutlined } from '@ant-design/icons-vue'
-import { h, onMounted, onUnmounted, ref } from 'vue'
-import { MutationsType, store } from '@/stores/store'
-import type { Item } from '@/stores/store'
-import type { MenuClickEventHandler } from 'ant-design-vue/es/menu/src/interface'
-const current = ref<string[]>(['Home'])
-const cart = ref<Item[]>([])
+import { h, onMounted, onUnmounted, reactive, ref } from 'vue'
+import { useStore } from 'vuex'
+import { StoreCommit, key } from '@/stores'
+import type { Product } from '@/stores/modules/product'
+import { API } from '@/axios/api'
 
+const current = ref<string[]>(['Home'])
+const store = useStore(key)
+const cart = ref<Product[]>([])
+const router = useRouter()
+const user = reactive(store.state.userModule)
 const itemSubscribe = () => {
-  store.subscribe((_, state) => {
-    cart.value = state
+  store.subscribe((mutation, state) => {
+    if (
+      mutation.type === StoreCommit.ADD_ITEM ||
+      mutation.type === StoreCommit.SET_LOCAL_PRODUCTS
+    ) {
+      if (state.cartModule.products.length > 0) {
+        const products = JSON.parse(state.cartModule.products)
+        cart.value = products
+      }
+    }
+    if (mutation.type === StoreCommit.RESET_CART) {
+      cart.value = []
+    }
   })
 }
 const handleDropdownClick = (event: any) => {
   event.stopPropagation()
 }
-const itemQuantityChange = (item: Item, quantity: number) => {
+const itemQuantityChange = (item: Product, quantity: number) => {
   const newItem = item
   newItem.quantity = quantity
-  store.commit(MutationsType.SET_QUANTITY, newItem)
+  store.commit(StoreCommit.SET_QUANTITY, newItem)
 }
-const selectKey: MenuClickEventHandler = (info) => {
+function selectKey(info: any) {
   const { key } = info
-  if (key !== '') current.value = [key.toString()]
+  if (key && key !== '') current.value = [key.toString()]
+}
+async function checkOut(event: any) {
+  if (store.state.cartModule.products.length > 0) {
+    const userId = store.state.userModule.userId
+    const products = store.state.cartModule.products
+    const res = await API.getInstance().addProductsToCart({ userId, products })
+    if (res !== 'success') {
+      console.log('update product error')
+    }
+  }
+  event.stopPropagation()
+  router.push('cart')
+}
+function login(event: any) {
+  event.stopPropagation()
+  store.state.routeModule.isLogin = true
+}
+async function logOut(event: any) {
+  event.stopPropagation()
+  const res = await API.getInstance().logout({
+    userId: store.state.userModule.userId,
+    token: store.state.userModule.token
+  })
+  if (res.status === 200) {
+    localStorage.clear()
+    store.commit(StoreCommit.RESET_USER)
+    store.commit(StoreCommit.SET_NOTIFY, {
+      isNotify: true,
+      title: 'Message',
+      message: 'logout successful'
+    })
+    cart.value = []
+    router.push('/')
+  } else
+    store.commit(StoreCommit.SET_NOTIFY, {
+      isNotify: true,
+      title: 'Message',
+      message: 'An error occurred, please try again later'
+    })
+}
+function checkRecord(event: any) {
+  event.stopPropagation()
+  if (store.state.userModule.userId > 0) {
+    router.push('record')
+  }
 }
 onMounted(itemSubscribe)
 onUnmounted(itemSubscribe)
@@ -59,7 +119,7 @@ onUnmounted(itemSubscribe)
           <Menu.Item v-for="(item, index) in cart" :key="index">
             <div style="display: flex; justify-content: space-between">
               <span style="max-width: 70%; text-overflow: ellipsis; overflow-x: hidden">
-                {{ item.title }}
+                {{ item.name }}
               </span>
               <Dropdown trigger="click" style="padding-left: 25px">
                 <Button @click="handleDropdownClick">{{ item.quantity }}</Button>
@@ -76,11 +136,23 @@ onUnmounted(itemSubscribe)
               </Dropdown>
             </div>
           </Menu.Item>
-          <Menu.Item style="background-color: blue"> check out </Menu.Item>
+          <Menu.Item
+            style="background-color: blue"
+            @click="checkOut"
+            :disabled="store.state.cartModule.products.length <= 0"
+          >
+            checkout
+          </Menu.Item>
         </Menu.SubMenu>
         <Menu.SubMenu :icon="h(UserOutlined)" class="submenu-icon">
-          <Menu.Item key="LogIn">Log In</Menu.Item>
-          <Menu.Item key="LogOut">Log Out</Menu.Item>
+          <Menu.Item key="LogOut" v-if="user.userId > 0" disabled>{{
+            `user_${user.userId}`
+          }}</Menu.Item>
+          <Menu.Item key="LogIn" :disabled="user.userId > 0" @click="login">login</Menu.Item>
+          <Menu.Item key="LogOut" :disabled="user.userId <= 0" @click="logOut">logout</Menu.Item>
+          <Menu.Item key="LogOut" :disabled="user.userId <= 0" @click="checkRecord">
+            Historical orders
+          </Menu.Item>
         </Menu.SubMenu>
       </div>
     </Menu>

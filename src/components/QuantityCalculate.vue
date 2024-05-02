@@ -1,37 +1,48 @@
 <script lang="ts">
+import { StoreCommit, key } from '@/stores'
+import type { Product } from '@/stores/modules/product'
 import { PlusCircleFilled, MinusCircleFilled, ShoppingCartOutlined } from '@ant-design/icons-vue'
 import { ref } from 'vue'
-import { store, MutationsType } from '@/stores/store'
+import { useStore } from 'vuex'
 export default {
-  props: ['title', 'price'],
+  props: ['name', 'price', 'id', 'imgSrc', 'size', 'noCart', 'defaultQuantity'],
   components: {
     APlus: PlusCircleFilled,
     AMinus: MinusCircleFilled,
     AShopping: ShoppingCartOutlined
   },
-  setup() {
-    const quantity = ref(0)
-    return { quantity }
+  setup(props) {
+    const quantity = ref(props.defaultQuantity ?? 0)
+    const store = useStore(key)
+    return { quantity, store }
   },
   methods: {
     calQuantity(index: number) {
       this.quantity += index
       if (this.quantity < 0) this.quantity = 0
     },
-    addItem() {
-      const item = { title: this.title, price: this.price, quantity: this.quantity }
-      store.commit(MutationsType.ADD_ITEM, item)
+    async addItem() {
+      if (this.quantity <= 0) return
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const item: Product = {
+        id: this.id,
+        name: this.name,
+        price: this.price,
+        quantity: this.quantity,
+        imgSrc: this.imgSrc
+      }
+      this.store.commit(StoreCommit.ADD_ITEM, item)
       this.quantity = 0
     }
   }
 }
 </script>
 <template>
-  <div class="quantity">
-    <a-minus @click="calQuantity(-1)"></a-minus>
+  <div class="quantity" :style="{ fontSize: size ? `${size}px` : '16px' }">
+    <a-minus class="btn" @click="calQuantity(-1)"></a-minus>
     <input type="text" disabled style="border: none" :value="quantity" />
-    <a-plus @click="calQuantity(1)"></a-plus>
-    <a-shopping class="shopping-item" @click="addItem"></a-shopping>
+    <a-plus class="btn" @click="calQuantity(1)"></a-plus>
+    <a-shopping class="shopping-item btn" @click="addItem" v-if="!noCart"></a-shopping>
   </div>
 </template>
 <style scoped lang="scss">
@@ -39,7 +50,6 @@ export default {
   display: flex;
   width: fit-content;
   align-items: center;
-  margin-top: auto;
   input {
     max-width: 70px;
     text-align: center;
@@ -51,5 +61,9 @@ export default {
   font-size: 20px;
   cursor: pointer;
 }
+.btn {
+  :hover {
+    scale: 1.05;
+  }
+}
 </style>
-@/stores/store
