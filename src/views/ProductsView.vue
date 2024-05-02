@@ -16,6 +16,7 @@ export default {
     const products = ref<Product[]>([])
     const productTypes = ref<string[]>([])
     const productList = ref<{ type: string; items: Product[] }[]>([])
+    const showSidebar = ref(window.innerWidth <= 450 ? false : true)
     const store = useStore(key)
     return {
       tag,
@@ -25,7 +26,8 @@ export default {
       productList,
       products,
       productTypes,
-      store
+      store,
+      showSidebar
     }
   },
   components: {
@@ -75,7 +77,17 @@ export default {
 </script>
 <template>
   <div class="product">
-    <div class="side-bar">
+    <div class="side-bar" v-if="showSidebar">
+      <li
+        :class="['side-item', { active: tag === index }]"
+        v-for="(item, index) in productList"
+        :key="index"
+        @click="changeTag(index)"
+      >
+        {{ item.type }}
+      </li>
+    </div>
+    <div class="top-bar" v-else>
       <li
         :class="['side-item', { active: tag === index }]"
         v-for="(item, index) in productList"
@@ -144,7 +156,20 @@ export default {
   min-width: 200px;
   height: 100%;
   position: relative;
+  top: 0;
   left: 0;
+  flex-direction: column;
+  border-right: 1px solid;
+  padding-left: 20px;
+  padding-top: 50px;
+  gap: 10px;
+  font-size: 24px;
+}
+.top-bar {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  position: relative;
   flex-direction: column;
   border-right: 1px solid;
   padding-left: 20px;
@@ -220,5 +245,21 @@ export default {
   justify-content: end;
   padding-right: 10%;
   padding-bottom: 1%;
+}
+
+@media (max-width: 450px) {
+  .product {
+    flex-direction: column;
+  }
+  .content {
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+  }
+  .item-group {
+    gap: 10px;
+    justify-content: center;
+    padding-left: unset;
+  }
 }
 </style>

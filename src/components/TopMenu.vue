@@ -13,7 +13,9 @@ const store = useStore(key)
 const cart = ref<Product[]>([])
 const router = useRouter()
 const user = reactive(store.state.userModule)
-const itemSubscribe = () => {
+const paddingInline = ref(window.innerWidth <= 450 ? 5 : 16)
+const homeTitle = ref(window.innerWidth <= 450 ? '' : 'Coffee Site')
+function itemSubscribe() {
   store.subscribe((mutation, state) => {
     if (
       mutation.type === StoreCommit.ADD_ITEM ||
@@ -29,10 +31,10 @@ const itemSubscribe = () => {
     }
   })
 }
-const handleDropdownClick = (event: any) => {
+function handleDropdownClick(event: any) {
   event.stopPropagation()
 }
-const itemQuantityChange = (item: Product, quantity: number) => {
+function itemQuantityChange(item: Product, quantity: number) {
   const newItem = item
   newItem.quantity = quantity
   store.commit(StoreCommit.SET_QUANTITY, newItem)
@@ -99,20 +101,36 @@ onUnmounted(itemSubscribe)
       trigger-sub-menu-action="click"
       @click="selectKey"
     >
-      <Menu.Item key="Home" :icon="h(HomeOutlined)">
-        <RouterLink to="/">Coffee Site</RouterLink>
+      <Menu.Item
+        key="Home"
+        :icon="h(HomeOutlined)"
+        :style="{ 'padding-inline': `${paddingInline}px` }"
+      >
+        <RouterLink to="/">{{ homeTitle }}</RouterLink>
       </Menu.Item>
       <div>
-        <Menu.Item key="Products" title="Products">
+        <Menu.Item
+          key="Products"
+          title="Products"
+          :style="{ 'padding-inline': `${paddingInline}px` }"
+        >
           <RouterLink to="/products">Products</RouterLink>
         </Menu.Item>
-        <Menu.Item key="Course" title="Course">
+        <Menu.Item key="Course" title="Course" :style="{ 'padding-inline': `${paddingInline}px` }">
           <RouterLink to="/course">Course</RouterLink>
         </Menu.Item>
-        <Menu.Item key="AboutUs" title="About Us">
+        <Menu.Item
+          key="AboutUs"
+          title="About Us"
+          :style="{ 'padding-inline': `${paddingInline}px` }"
+        >
           <RouterLink to="/about">About Us</RouterLink>
         </Menu.Item>
-        <Menu.SubMenu :icon="h(ShoppingCartOutlined)" class="submenu-icon">
+        <Menu.SubMenu
+          :icon="h(ShoppingCartOutlined)"
+          class="submenu-icon"
+          :style="{ 'padding-inline': `${paddingInline}px` }"
+        >
           <template #title>
             <Badge class="badge" :count="cart.length" :offset="['-15%', '-120%']"></Badge>
           </template>
@@ -144,7 +162,11 @@ onUnmounted(itemSubscribe)
             checkout
           </Menu.Item>
         </Menu.SubMenu>
-        <Menu.SubMenu :icon="h(UserOutlined)" class="submenu-icon">
+        <Menu.SubMenu
+          :icon="h(UserOutlined)"
+          class="submenu-icon"
+          :style="{ 'padding-inline': `${paddingInline}px` }"
+        >
           <Menu.Item key="LogOut" v-if="user.userId > 0" disabled>{{
             `user_${user.userId}`
           }}</Menu.Item>
@@ -190,6 +212,27 @@ nav {
   font-size: 24px;
   svg {
     font-size: 24px;
+  }
+}
+.item {
+  padding-inline: 5px;
+}
+
+@media (max-width: 450px) {
+  .menu {
+    font-size: 14px;
+  }
+  nav {
+    padding-left: unset;
+    padding-right: unset;
+    ul {
+      gap: unset;
+    }
+  }
+}
+@media (max-width: 400px) {
+  .menu {
+    font-size: 12px;
   }
 }
 </style>

@@ -76,7 +76,8 @@ export default {
     const carouselIndex = ref(0)
     const timer = ref(0)
     const store = useStore(key)
-    return { carouselIndex, timer, store }
+    const showDes = ref(window.innerWidth <= 450 ? false : true)
+    return { carouselIndex, timer, store, showDes }
   },
   methods: {
     setCarouselIndex(index: number) {
@@ -100,13 +101,13 @@ export default {
 <template>
   <div class="home">
     <div class="carousel">
-      <div class="discount">
+      <div class="discount" v-if="showDes">
         ON SALE<br />
         NOW!
       </div>
       <div class="carousel-item" v-for="(item, index) in carouselItems" :key="index">
         <img :class="['carousel-img', { active: carouselIndex === index }]" :src="item.imgSrc" />
-        <div :class="['description', { active: carouselIndex === index }]">
+        <div :class="['description', { active: carouselIndex === index }]" v-if="showDes">
           {{ item.title }}
           <div class="price">{{ `NT$: ${item.price}` }}</div>
           {{ `NT$: ${Math.floor(Number(item.price) * item.discount)}` }}
@@ -415,6 +416,40 @@ footer {
     cursor: pointer;
     &:hover {
       scale: 1.05;
+    }
+  }
+}
+
+@media (max-width: 450px) {
+  .shop-category {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+  }
+  .category-item {
+    width: 85%;
+  }
+  .course {
+    width: 80%;
+    grid-template-columns: unset;
+    grid-template-rows: 50% 50%;
+    img {
+      width: 80%;
+    }
+  }
+  footer {
+    padding: 10px;
+  }
+  .footer-title {
+    font-size: 16px;
+  }
+  .footer-group {
+    display: grid;
+    gap: 5px;
+    li {
+      font-size: 12px;
     }
   }
 }

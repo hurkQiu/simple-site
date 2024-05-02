@@ -3,7 +3,7 @@
     <div v-if="list.length > 0" class="content">
       <div class="title">shopping cart</div>
       <div class="item" v-for="(item, index2) in list" :key="index2">
-        <img :src="item.imgSrc" style="max-height: 150px" />
+        <img :src="item.imgSrc" :style="{ 'max-height': `${imgSize}px` }" />
         <div>{{ item.name }}</div>
         <QuantityCalculate
           :name="item.name"
@@ -11,7 +11,7 @@
           :id="item.id"
           :img-src="item.imgSrc"
           :noCart="true"
-          :size="32"
+          :size="iconSize"
           :default-quantity="item.quantity"
         ></QuantityCalculate>
       </div>
@@ -35,6 +35,8 @@ import type { ShoppingCart } from '@/axios/Model/CommonModel'
 const list = ref<Product[]>([])
 const store = useStore(key)
 const visible = ref(false)
+const imgSize = ref(window.innerWidth <= 450 ? 100 : 150)
+const iconSize = ref(window.innerWidth <= 450 ? 20 : 32)
 async function checkout() {
   const userId = store.state.userModule.userId
   if (userId > 0) {
@@ -134,5 +136,8 @@ onMounted(async () => {
   &:hover {
     background-color: rgba(0, 0, 255, 1);
   }
+}
+
+@media (max-width: 450px) {
 }
 </style>

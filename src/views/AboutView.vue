@@ -38,4 +38,12 @@ img {
   max-width: 600px;
   max-height: 420px;
 }
+@media (max-width: 450px) {
+  .about {
+    flex-direction: column;
+  }
+  img {
+    max-width: 100%;
+  }
+}
 </style>

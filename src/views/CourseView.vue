@@ -93,4 +93,13 @@ export default {
     font-size: 16px;
   }
 }
+@media (max-width: 450px) {
+  .item {
+    grid-template-columns: unset;
+    grid-template-rows: 50% 50%;
+  }
+  .item-description {
+    font-size: 12px;
+  }
+}
 </style>
